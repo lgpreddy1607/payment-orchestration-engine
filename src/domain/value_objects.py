@@ -1,6 +1,5 @@
 from decimal import Decimal
 from dataclasses import dataclass
-
 from .exceptions import InvariantViolation, CurrencyMismatch
 
 
@@ -33,3 +32,22 @@ class Money:
         if result < Decimal("0"):
             raise InvariantViolation("Resulting Money cannot be negative.")
         return Money(result, self.currency)
+    
+
+@dataclass(frozen=True)
+class IdempotencyKey:
+    value: str
+
+    def __post_init__(self):
+        if not isinstance(self.value, str):
+            raise InvariantViolation("IdempotencyKey must be a string.")
+
+        normalized = self.value.strip()
+
+        if not normalized:
+            raise InvariantViolation("IdempotencyKey cannot be empty.")
+
+        if len(normalized) > 255:
+            raise InvariantViolation("IdempotencyKey too long.")
+
+        object.__setattr__(self, "value", normalized)

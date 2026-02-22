@@ -4,12 +4,13 @@ from decimal import Decimal
 from domain.entities import Payment, PaymentState
 from domain.value_objects import Money
 from domain.exceptions import InvalidStateTransition
+from domain.value_objects import Money, IdempotencyKey
 
 
 def create_payment():
     return Payment(
         amount=Money(Decimal("100.00"), "EUR"),
-        idempotency_key="abc123"
+        idempotency_key=IdempotencyKey("abc123"),
     )
 
 

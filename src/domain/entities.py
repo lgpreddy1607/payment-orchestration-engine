@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 from uuid import UUID, uuid4
 
-from .value_objects import Money
+from .value_objects import Money, IdempotencyKey
 from .exceptions import InvariantViolation, InvalidStateTransition
 
 
@@ -16,7 +16,7 @@ class PaymentState(str, Enum):
 
 
 class Payment:
-    def __init__(self, amount: Money, idempotency_key: str):
+    def __init__(self, amount: Money, idempotency_key: IdempotencyKey):
         self.id = uuid4()
         self.amount = amount
         self.idempotency_key = idempotency_key
@@ -50,6 +50,23 @@ class Payment:
         }
 
         return new_state in allowed[self.state]
+    
+    @classmethod
+    def rehydrate(
+        cls,
+        *,
+        id,
+        amount,
+        idempotency_key,
+        state,
+    ):
+        payment = cls(
+            amount=amount,
+            idempotency_key=idempotency_key,
+        )
+        payment.id = id
+        payment.state = state
+        return payment
 
     def mark_processing(self):
         self._transition(PaymentState.PROCESSING)
